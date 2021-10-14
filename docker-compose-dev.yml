@@ -1,0 +1,34 @@
+services:
+  karl-bock-auth-service:
+    image: course-service:local
+    container_name: kb-course-service
+    restart: always
+    hostname: course-service
+    depends_on:
+      - karl-bock-course-service-db
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 8080:8080
+    networks:
+      - brozone
+
+  karl-bock-course-service-db:
+    image: mysql:8.0
+    container_name: kb-course-db
+    restart: always
+    hostname: course-service-db
+    environment:
+      MYSQL_ROOT_PASSWORD: einstein
+      MYSQL_DATABASE: courses
+      MYSQL_USER: kb-course
+      MYSQL_PASSWORD: kb-course
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 3306:3306
+    networks:
+      - brozone
+networks:
+  brozone:
+    external: false

@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  karl-bock-auth-service:
+    image: gitlab.ho-me.zone:5003/karl-bock-uni/course-service:latest
+    container_name: kb-course-service
+    restart: always
+    hostname: course-service
+    depends_on:
+      - karl-bock-course-service-db
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - mainprod
+      - brozone
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kb-course.service=kb-course"
+      - "traefik.docker.network=mainprod"
+      - "traefik.tcp.routers.kb-course.tls=true"
+      - "traefik.http.routers.kb-course.entrypoints=websecure"
+      - "traefik.http.services.kb-course.loadbalancer.server.port=8080"
+      - "traefik.tcp.routers.kb-course.rule=HostSNI(`course.karl-bock.academy`)"
+      - "traefik.http.routers.kb-course.rule=Host(`course.karl-bock.academy`)"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  karl-bock-course-service-db:
+    image: mysql:8.0
+    container_name: kb-course-db
+    restart: always
+    hostname: course-service-db
+    environment:
+      MYSQL_ROOT_PASSWORD: einstein
+      MYSQL_DATABASE: courses
+      MYSQL_USER: kb-course
+      MYSQL_PASSWORD: kb-course
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - brozone
+networks:
+  mainprod:
+    external: true
+  brozone:
+    external: false
