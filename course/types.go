@@ -10,5 +10,4 @@ type CreateRequest struct {
 	Certpath    string `json:"certpath"`
 	Enlisted    string `json:"enlisted"`
 	Likes       int    `json:"likes"`
-	Token       string `json:"token"`
 }

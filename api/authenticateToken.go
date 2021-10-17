@@ -11,7 +11,7 @@ type authTokenRequest struct {
 	Token string `json:"token"`
 }
 
-func authenticateToken(token string) error {
+func AuthenticateToken(token string) error {
 	payload := authTokenRequest{Token: token}
 	data, err := json.MarshalIndent(&payload, "", " ")
 	if err != nil {
