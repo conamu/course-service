@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func SignUpHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+func CreateCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Course Create endpoint hit!")
 		if r.Method != "POST" {
@@ -28,10 +28,6 @@ func SignUpHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) 
 		}
 		createRequest := &course.CreateRequest{}
 		err = json.Unmarshal(body, createRequest)
-		if err := authenticateToken(createRequest.Token); err != nil {
-			w.WriteHeader(401)
-			return
-		}
 		if err != nil {
 			w.WriteHeader(500)
 			log.Println(err.Error())
@@ -41,12 +37,16 @@ func SignUpHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(400)
 			return
 		}
+		if err := authenticateToken(createRequest.Token); err != nil {
+			w.WriteHeader(401)
+			return
+		}
 		log.Println(createRequest)
 
 		err = course.CreateCourse(createRequest, db)
 		if err != nil {
 			log.Println(err.Error())
-			w.WriteHeader(401)
+			w.WriteHeader(500)
 		}
 		w.WriteHeader(201)
 	}

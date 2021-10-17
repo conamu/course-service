@@ -59,7 +59,7 @@ func main() {
 
 	server := NewServer(db, router)
 
-	server.router.HandleFunc("/create", checkAuthHeader(api.SignUpHandlerFunc(server.db)))
+	server.router.HandleFunc("/create", checkAuthHeader(api.CreateCourseHandlerFunc(server.db)))
 
 	log.Println("KB-Course-Service listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", server.router))
