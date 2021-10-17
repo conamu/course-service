@@ -96,6 +96,7 @@ func checkAuthHeader(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Auth header middleware admin
 func checkAdminAuthHeader(next http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		header := req.Header.Get("X-KBU-Auth")

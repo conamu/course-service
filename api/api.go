@@ -85,39 +85,23 @@ func GetCourseByIDHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Re
 func DeleteCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Course Create endpoint hit!")
-		if r.Method != "POST" {
+		if r.Method != "DELETE" {
 			w.WriteHeader(405)
 			return
 		}
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Println(err.Error())
-			return
-		}
-		if r.ContentLength == 0 {
-			w.WriteHeader(400)
-			return
-		}
-		createRequest := &course.Course{}
-		err = json.Unmarshal(body, createRequest)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Println(err.Error())
-			return
-		}
-		if createRequest == nil {
-			w.WriteHeader(400)
-			return
-		}
-		log.Println(createRequest)
+		id := r.URL.Query().Get("courseId")
 
-		err = course.CreateCourse(createRequest, db)
+		if id == "" {
+			w.WriteHeader(400)
+			return
+		}
+
+		err := course.DeleteCourseById(id, db)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
-		w.WriteHeader(201)
+		w.WriteHeader(200)
 	}
 }
 

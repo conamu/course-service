@@ -52,3 +52,12 @@ func GetCourseByID(courseId string, db *sql.DB) (*Course, error) {
 	}, nil
 
 }
+
+func DeleteCourseById(id string, db *sql.DB) error {
+	deleteQuery := `DELETE FROM COURSES WHERE ID=?;`
+	_, err := db.Exec(deleteQuery, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
