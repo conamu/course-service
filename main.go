@@ -60,13 +60,15 @@ func main() {
 	server := NewServer(db, router)
 
 	// Create a course
-	server.router.HandleFunc("/create", checkAuthHeader(api.CreateCourseHandlerFunc(server.db)))
+	server.router.HandleFunc("/create", checkAdminAuthHeader(api.CreateCourseHandlerFunc(server.db)))
 	// Update a course
-	server.router.HandleFunc("/update", checkAuthHeader(api.CreateCourseHandlerFunc(server.db)))
+	server.router.HandleFunc("/update", checkAdminAuthHeader(api.UpdateCourseHandlerFunc(server.db)))
+	// Delete a course
+	server.router.HandleFunc("/delete", checkAdminAuthHeader(api.DeleteCourseHandlerFunc(server.db)))
 	// Get All courses IDs, Names, Difficulty Ratings
-	server.router.HandleFunc("/courses", checkAuthHeader(api.CreateCourseHandlerFunc(server.db)))
+	server.router.HandleFunc("/courses", checkAuthHeader(api.GetAllCoursesHandlerFunc(server.db)))
 	// Get one course by ID
-	server.router.HandleFunc("/course", checkAuthHeader(api.CreateCourseHandlerFunc(server.db)))
+	server.router.HandleFunc("/course", checkAuthHeader(api.GetCourseByIDHandlerFunc(server.db)))
 
 	log.Println("KB-Course-Service listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", server.router))
@@ -84,9 +86,34 @@ func checkAuthHeader(next http.HandlerFunc) http.HandlerFunc {
 			log.Println("Auth header does not match!")
 			return
 		}
-		if err := api.AuthenticateToken(sessionHeader); err != nil {
+		_, err := api.AuthenticateToken(sessionHeader)
+		if err != nil {
 			res.WriteHeader(401)
 			log.Println("Login header does not match!")
+			return
+		}
+		next(res, req)
+	}
+}
+
+func checkAdminAuthHeader(next http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		header := req.Header.Get("X-KBU-Auth")
+		sessionHeader := req.Header.Get("X-KBU-Login")
+		if header != "abcdefghijklmnopqrstuvwxyz" {
+			res.WriteHeader(403)
+			log.Println("Auth header does not match!")
+			return
+		}
+		role, err := api.AuthenticateToken(sessionHeader)
+		if err != nil {
+			res.WriteHeader(401)
+			log.Println("Login header does not match!")
+			return
+		}
+		if role != "admin" {
+			res.WriteHeader(401)
+			log.Println("Role not sufficient!")
 			return
 		}
 		next(res, req)
