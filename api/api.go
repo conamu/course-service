@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func CreateCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
@@ -108,44 +109,24 @@ func DeleteCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Req
 func GetAllCoursesHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Course Create endpoint hit!")
-		if r.Method != "POST" {
+		if r.Method != "GET" {
 			w.WriteHeader(405)
 			return
 		}
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Println(err.Error())
-			return
-		}
-		if r.ContentLength == 0 {
-			w.WriteHeader(400)
-			return
-		}
-		createRequest := &course.Course{}
-		err = json.Unmarshal(body, createRequest)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Println(err.Error())
-			return
-		}
-		if createRequest == nil {
-			w.WriteHeader(400)
-			return
-		}
-		log.Println(createRequest)
-
-		err = course.CreateCourse(createRequest, db)
+		pageLength, err := strconv.Atoi(r.URL.Query().Get("pageLength"))
+		response, err := course.GetAllCourses(pageLength, db)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
-		w.WriteHeader(201)
+		data, err := json.MarshalIndent(response, "", " ")
+		w.WriteHeader(200)
+		w.Write(data)
 	}
 }
-func UpdateCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+func UpdateCourseByIdHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Course Create endpoint hit!")
+		log.Println("Course Update endpoint hit!")
 		if r.Method != "POST" {
 			w.WriteHeader(405)
 			return
@@ -160,24 +141,29 @@ func UpdateCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Req
 			w.WriteHeader(400)
 			return
 		}
-		createRequest := &course.Course{}
-		err = json.Unmarshal(body, createRequest)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Println(err.Error())
-			return
-		}
-		if createRequest == nil {
+		id := r.URL.Query().Get("courseId")
+		if id == "" {
 			w.WriteHeader(400)
 			return
 		}
-		log.Println(createRequest)
+		updateRequest := &course.Course{}
+		err = json.Unmarshal(body, updateRequest)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Println(err.Error())
+			return
+		}
+		if updateRequest == nil {
+			w.WriteHeader(400)
+			return
+		}
+		log.Println(updateRequest)
 
-		err = course.CreateCourse(createRequest, db)
+		err = course.UpdateCourseById(id, updateRequest, db)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
-		w.WriteHeader(201)
+		w.WriteHeader(200)
 	}
 }

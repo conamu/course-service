@@ -15,6 +15,7 @@ type Course struct {
 type CourseMin struct {
 	Name       string `json:"name"`
 	Difficulty int    `json:"difficulty"`
+	Fee        string `json:"fee"`
 	Likes      int    `json:"likes"`
 }
 

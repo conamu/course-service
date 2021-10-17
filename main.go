@@ -62,7 +62,7 @@ func main() {
 	// Create a course
 	server.router.HandleFunc("/create", checkAdminAuthHeader(api.CreateCourseHandlerFunc(server.db)))
 	// Update a course
-	server.router.HandleFunc("/update", checkAdminAuthHeader(api.UpdateCourseHandlerFunc(server.db)))
+	server.router.HandleFunc("/update", checkAdminAuthHeader(api.UpdateCourseByIdHandlerFunc(server.db)))
 	// Delete a course
 	server.router.HandleFunc("/delete", checkAdminAuthHeader(api.DeleteCourseHandlerFunc(server.db)))
 	// Get All courses IDs, Names, Difficulty Ratings

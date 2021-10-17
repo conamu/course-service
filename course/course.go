@@ -2,12 +2,16 @@ package course
 
 import (
 	"database/sql"
+	"errors"
 )
 
 func CreateCourse(request *Course, db *sql.DB) error {
-
+	err := validateCourse(request)
+	if err != nil {
+		return err
+	}
 	createQuery := `INSERT INTO COURSES (INSTRUCTOR,DESCRIPTION,DIFFICULTY,FEE,CERTPATH,TITLE,SUBTITLE,ENLISTED,LIKES) VALUES (?,?,?,?,?,?,?,?,?);`
-	_, err := db.Exec(createQuery, request.Instructor, request.Description, request.Difficulty, request.Fee, request.Certpath, request.Title, request.Subtitle, request.Enlisted, request.Likes)
+	_, err = db.Exec(createQuery, request.Instructor, request.Description, request.Difficulty, request.Fee, request.Certpath, request.Title, request.Subtitle, request.Enlisted, request.Likes)
 	if err != nil {
 		return err
 	}
@@ -58,6 +62,75 @@ func DeleteCourseById(id string, db *sql.DB) error {
 	_, err := db.Exec(deleteQuery, id)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func UpdateCourseById(id string, course *Course, db *sql.DB) error {
+	err := validateCourse(course)
+	if err != nil {
+		return err
+	}
+	updateQuery := `UPDATE COURSES SET INSTRUCTOR=?,DESCRIPTION=?,DIFFICULTY=?,FEE=?,CERTPATH=?,TITLE=?,SUBTITLE=?,ENLISTED=?,LIKES=? WHERE ID=?;`
+	_, err = db.Exec(updateQuery, course.Instructor, course.Description, course.Difficulty, course.Fee, course.Certpath, course.Title, course.Subtitle, course.Enlisted, course.Likes, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetAllCourses(pageLength int, db *sql.DB) (*AllCoursesResponse, error) {
+	var (
+		id         string
+		title      string
+		difficulty int
+		fee        string
+		likes      int
+	)
+	query := `SELECT ID,TITLE,DIFFICULTY,FEE,LIKES FROM COURSES LIMIT ?;`
+	rows, err := db.Query(query, pageLength)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AllCoursesResponse{Courses: make(map[string]CourseMin, pageLength)}
+	for rows.Next() {
+		err := rows.Scan(&id, &title, &difficulty, &fee, &likes)
+		if err != nil {
+			return nil, err
+		}
+		courseResult := CourseMin{
+			Name:       title,
+			Difficulty: difficulty,
+			Fee:        fee,
+			Likes:      likes,
+		}
+		response.Courses[id] = courseResult
+	}
+	return response, nil
+}
+
+func validateCourse(course *Course) error {
+	if course.Fee == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Title == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Subtitle == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Enlisted == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Description == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Instructor == "" {
+		return errors.New("course fields not filled in correctly")
+	}
+	if course.Certpath == "" {
+		return errors.New("course fields not filled in correctly")
 	}
 	return nil
 }
