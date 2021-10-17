@@ -69,6 +69,7 @@ func main() {
 	server.router.HandleFunc("/courses", checkAuthHeader(api.GetAllCoursesHandlerFunc(server.db)))
 	// Get one course by ID
 	server.router.HandleFunc("/course", checkAuthHeader(api.GetCourseByIDHandlerFunc(server.db)))
+	server.router.HandleFunc("/ping", api.Ping())
 
 	log.Println("KB-Course-Service listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", server.router))

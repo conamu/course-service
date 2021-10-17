@@ -167,3 +167,10 @@ func UpdateCourseByIdHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http
 		w.WriteHeader(200)
 	}
 }
+
+func Ping() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		return
+	}
+}
