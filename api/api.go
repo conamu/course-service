@@ -114,14 +114,19 @@ func GetAllCoursesHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Re
 			return
 		}
 		pageLength, err := strconv.Atoi(r.URL.Query().Get("pageLength"))
+		if pageLength == 0 {
+			pageLength = 5
+		}
 		response, err := course.GetAllCourses(pageLength, db)
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
 		data, err := json.MarshalIndent(response, "", " ")
-		w.WriteHeader(200)
-		w.Write(data)
+		_, err = w.Write(data)
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
 }
 func UpdateCourseByIdHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
