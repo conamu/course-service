@@ -122,7 +122,7 @@ func GetAllCoursesHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Re
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
-		data, err := json.MarshalIndent(response, "", " ")
+		data, err := json.MarshalIndent(response.Courses, "", " ")
 		_, err = w.Write(data)
 		if err != nil {
 			log.Println(err.Error())
