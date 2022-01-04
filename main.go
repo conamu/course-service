@@ -45,7 +45,7 @@ func main() {
 		User:   "kb-course",
 		Passwd: "kb-course",
 		Net:    "tcp",
-		Addr:   "course-service-db:3306",
+		Addr:   "kb-course-service-db:3306",
 		DBName: "courses",
 	}
 
