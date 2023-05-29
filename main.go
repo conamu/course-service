@@ -4,11 +4,12 @@ import (
 	"course-service/api"
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 var initCoursesDBQuery = `CREATE TABLE IF NOT EXISTS COURSES 
@@ -39,40 +40,38 @@ func NewServer(db *sql.DB, router *mux.Router) *Server {
 
 func main() {
 	log.Println("Waiting for DB to be up...")
-	time.Sleep(time.Second * 20)
-
+	time.Sleep(time.Second * 5)
 	dbConfig := mysql.Config{
 		User:   "kb-course",
 		Passwd: "kb-course",
 		Net:    "tcp",
-		Addr:   "kb-course-service-db:3306",
+		Addr:   "course-service-db:3306",
 		DBName: "courses",
 	}
 
 	router := mux.NewRouter()
+	router.Use(corsMiddleware)
 
 	db, err := sql.Open("mysql", dbConfig.FormatDSN())
 	_, err = db.Exec(initCoursesDBQuery)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err)
 	}
 
-	server := NewServer(db, router)
-
 	// Create a course
-	server.router.HandleFunc("/create", checkAdminAuthHeader(api.CreateCourseHandlerFunc(server.db)))
+	router.HandleFunc("/create", checkAdminAuthHeader(api.CreateCourseHandlerFunc(db)))
 	// Update a course
-	server.router.HandleFunc("/update", checkAdminAuthHeader(api.UpdateCourseByIdHandlerFunc(server.db)))
+	router.HandleFunc("/update", checkAdminAuthHeader(api.UpdateCourseByIdHandlerFunc(db)))
 	// Delete a course
-	server.router.HandleFunc("/delete", checkAdminAuthHeader(api.DeleteCourseHandlerFunc(server.db)))
+	router.HandleFunc("/delete", checkAdminAuthHeader(api.DeleteCourseHandlerFunc(db)))
 	// Get All courses IDs, Names, Difficulty Ratings
-	server.router.HandleFunc("/courses", checkAuthHeader(api.GetAllCoursesHandlerFunc(server.db)))
+	router.HandleFunc("/courses", checkAuthHeader(api.GetAllCoursesHandlerFunc(db)))
 	// Get one course by ID
-	server.router.HandleFunc("/course", checkAuthHeader(api.GetCourseByIDHandlerFunc(server.db)))
-	server.router.HandleFunc("/ping", api.Ping())
+	router.HandleFunc("/course", checkAuthHeader(api.GetCourseByIDHandlerFunc(db)))
+	router.HandleFunc("/ping", api.Ping())
 
 	log.Println("KB-Course-Service listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", server.router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 	defer db.Close()
 
 }
@@ -87,10 +86,11 @@ func checkAuthHeader(next http.HandlerFunc) http.HandlerFunc {
 			log.Println("Auth header does not match!")
 			return
 		}
+		fmt.Println(sessionHeader)
 		_, err := api.AuthenticateToken(sessionHeader)
 		if err != nil {
+			log.Println("Login header does not match!", err)
 			res.WriteHeader(401)
-			log.Println("Login header does not match!")
 			return
 		}
 		next(res, req)
@@ -120,4 +120,19 @@ func checkAdminAuthHeader(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(res, req)
 	}
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Methods", "POST")
+			w.Header().Set("Access-Control-Max-Age", "86400")
+			w.Header().Set("Access-Control-Allow-Headers",
+				"content-type,x-kbu-auth,content-length,x-kbu-login")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

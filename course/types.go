@@ -13,14 +13,11 @@ type Course struct {
 }
 
 type CourseMin struct {
+	Id         string `json:"id"`
 	Name       string `json:"name"`
 	Difficulty int    `json:"difficulty"`
 	Fee        string `json:"fee"`
 	Likes      int    `json:"likes"`
-}
-
-type AllCoursesResponse struct {
-	Courses map[string]CourseMin `json:"courses"`
 }
 
 type ValidationResponse struct {

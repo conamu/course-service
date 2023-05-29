@@ -79,7 +79,7 @@ func UpdateCourseById(id string, course *Course, db *sql.DB) error {
 	return nil
 }
 
-func GetAllCourses(pageLength int, db *sql.DB) (*AllCoursesResponse, error) {
+func GetAllCourses(pageLength int, db *sql.DB) ([]CourseMin, error) {
 	var (
 		id         string
 		title      string
@@ -93,19 +93,20 @@ func GetAllCourses(pageLength int, db *sql.DB) (*AllCoursesResponse, error) {
 		return nil, err
 	}
 
-	response := &AllCoursesResponse{Courses: make(map[string]CourseMin, pageLength)}
+	response := []CourseMin{}
 	for rows.Next() {
 		err := rows.Scan(&id, &title, &difficulty, &fee, &likes)
 		if err != nil {
 			return nil, err
 		}
 		courseResult := CourseMin{
+			Id:         id,
 			Name:       title,
 			Difficulty: difficulty,
 			Fee:        fee,
 			Likes:      likes,
 		}
-		response.Courses[id] = courseResult
+		response = append(response, courseResult)
 	}
 	return response, nil
 }

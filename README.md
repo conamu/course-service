@@ -66,7 +66,7 @@ without pageLength attribute it defaults to 5
 ```
 /courses?pageLength=5
 ```
-returns a map of ID (string) and Minimal Course Entry
+returns an array of Minimal Course Entry
 
 #### Get Course:
 Requires to be logged in as user

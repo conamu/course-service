@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,7 +21,9 @@ func AuthenticateToken(token string) (string, error) {
 		return "", err
 	}
 	buffer := bytes.NewBuffer(data)
-	req, err := http.NewRequest("POST", "https://auth.karl-bock.academy/validate", buffer)
+	log.Println(err)
+	log.Println(string(data))
+	req, err := http.NewRequest("POST", "http://auth-service:8080/validate", buffer)
 	if err != nil {
 		return "", err
 	}
@@ -31,6 +34,7 @@ func AuthenticateToken(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.Println(resp.StatusCode)
 	if resp.StatusCode != 200 {
 		return "", errors.New("auth service did not respond OK")
 	}

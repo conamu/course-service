@@ -44,6 +44,7 @@ func CreateCourseHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Req
 		if err != nil {
 			log.Println(err.Error())
 			w.WriteHeader(500)
+			return
 		}
 		w.WriteHeader(201)
 	}
@@ -122,7 +123,7 @@ func GetAllCoursesHandlerFunc(db *sql.DB) func(w http.ResponseWriter, r *http.Re
 			log.Println(err.Error())
 			w.WriteHeader(500)
 		}
-		data, err := json.MarshalIndent(response.Courses, "", " ")
+		data, err := json.MarshalIndent(response, "", " ")
 		_, err = w.Write(data)
 		if err != nil {
 			log.Println(err.Error())

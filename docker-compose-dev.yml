@@ -11,6 +11,7 @@ services:
     ports:
       - 8080:8080
     networks:
+      - mainprod
       - brozone
 
   karl-bock-course-service-db:
@@ -30,5 +31,7 @@ services:
     networks:
       - brozone
 networks:
+  mainprod:
+    external: true
   brozone:
     external: false
