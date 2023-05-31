@@ -44,6 +44,7 @@ func GetCourseByID(courseId string, db *sql.DB) (*Course, error) {
 	}
 
 	return &Course{
+		Id:          id,
 		Title:       title,
 		Subtitle:    subtitle,
 		Description: description,

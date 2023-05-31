@@ -1,6 +1,7 @@
 package course
 
 type Course struct {
+	Id          string `json:"id"`
 	Title       string `json:"title"`
 	Subtitle    string `json:"subtitle"`
 	Description string `json:"description"`
